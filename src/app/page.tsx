@@ -1,101 +1,124 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React from "react";
+import { Button } from "@/Components/ui/button";
+import { Card, CardContent } from "@/Components/ui/card";
+import { MoreVertical } from "lucide-react";
+
+interface ImageCarouselProps {
+  images: string[];
+}
+
+const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="relative w-full h-64 overflow-hidden">
+      <div
+        className="flex whitespace-nowrap animate-[scroll_25s_linear_infinite]"
+        style={{
+          animation: "scroll 25s linear infinite",
+        }}
+      >
+        {/* First set of images */}
+        {images.map((image, index) => (
+          <div key={`first-${index}`} className="w-1/3 flex-shrink-0">
+            <img src={image} alt={`Slide ${index + 1}`} className="w-full h-64 object-cover" />
+          </div>
+        ))}
+        {/* Duplicate set of images for seamless loop */}
+        {images.map((image, index) => (
+          <div key={`second-${index}`} className="w-1/3 flex-shrink-0">
+            <img src={image} alt={`Slide ${index + 1}`} className="w-full h-64 object-cover" />
+          </div>
+        ))}
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      <style jsx>{`
+        @keyframes scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+      `}</style>
     </div>
   );
-}
+};
+
+const LandingPage: React.FC = () => {
+  const images: string[] = ["/front1.avif", "/front2.avif", "/front3.webp"];
+
+  return (
+    <div
+      className="min-h-screen relative overflow-hidden"
+      style={{
+        background: "linear-gradient(to right, #d33c2f, #7e1308)",
+      }}
+    >
+     
+      {/* Background Image at the Bottom (Behind Content) */}
+      <div
+        className="absolute bottom-0 left-0 w-full h-48 z-[1]"
+        style={{
+          backgroundImage: "url('/lower.svg')",
+          backgroundSize: "cover",
+          backgroundBlendMode: "normal",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      />
+
+        {/* Upper Right Dots */}
+        <div
+        className="absolute top-5 mt-7 right-5 w-24 h-24 bg-contain bg-no-repeat z-10"
+        style={{ backgroundImage: "url('/dots.png')" }}
+      />
+       {/* Lower Left Dots */}
+       <div
+        className="absolute bottom-5 left-5 ml-5 mb-5 w-24 h-24 bg-contain bg-no-repeat z-10"
+        style={{ backgroundImage: "url('/dots.png')" }}
+      />
+      
+      {/* Navigation */}
+      <nav className="p-4 flex justify-between items-center">
+        <div className="text-white mt-6">
+          <h1 className="text-4xl  font-light">THE</h1>
+          <h2 className="text-5xl tracking-[0.4em] ">COMMUNITY</h2>
+          <h3 className="text-4xl font-bold">PINBOARD</h3>
+        </div>
+      </nav>
+
+      {/* Carousel */}
+      <div className="w-full px-4 py-8">
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <ImageCarousel images={images} />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+        <p className="text-white font-extralight tracking-[0.3em] text-lg md:text-xl max-w-2xl mb-8 z-10">
+          Your digital hub for local news, events, and announcements that keep
+          neighbors connected and informed.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+          <Button
+            variant="outline"
+            className="w-full z-10 bg-transparent text-white border-white hover:bg-white hover:text-red-600"
+          >
+            SIGN IN
+          </Button>
+          <Button className="w-full z-10 bg-white text-red-600 hover:bg-gray-100">
+            SIGN UP
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LandingPage;
