@@ -9,7 +9,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div
       style={{
-        background: "linear-gradient(to right, #FF6B6B, #8B0000)",
+        background: "linear-gradient(to right, #D83F31, #6D0900)",
         minHeight: "100vh",
         width: "100vw",
         position: "relative", 

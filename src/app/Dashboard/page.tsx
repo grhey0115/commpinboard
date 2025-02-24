@@ -366,7 +366,7 @@ const Dashboard: React.FC = () => {
       onSearchChange={(value) => setSearchTerm(value)}
     />  
 
-      <div className="w-full max-w-2xl h-[600px] overflow-y-auto p-4 bg-transparent z-10 scrollbar-hide">
+      <div className="w-full max-w-3xl h-[85vh] overflow-y-auto p-0 bg-transparent z-10 scrollbar-hide">
         {loading ? (
           <p className="text-center text-white">Loading posts...</p>
         ) : error ? (

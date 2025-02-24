@@ -65,15 +65,15 @@ const Navigation: React.FC<NavigationProps> = ({
   );
 
   return (
-    <nav className="w-full p-6 flex justify-between items-center">
-      <div className="flex flex-col text-gray-900">
-        <h1 className="text-left text-3xl font-light tracking-tight">THE</h1>
-        <h1 className="text-left text-3xl tracking-[0.3em] my-1">COMMUNITY</h1>
-        <h1 className="text-left text-3xl font-bold">PINBOARD</h1>
+    <nav className="w-full pt-2 mb-6 flex justify-between items-center">
+      <div className="flex flex-col text-white leading-tight">
+        <h1 className="text-left text-lg font-light">THE</h1>
+        <h1 className="text-left text-lg" style={{ letterSpacing: "0.3em" }}>COMMUNITY</h1>
+        <h1 className="text-left text-lg font-bold">PINBOARD</h1>
       </div>
 
-      <div className="flex items-center gap-6">
-        <div className="flex gap-10 px-10 py-4 rounded-full shadow-lg items-center bg-white">
+      <div className="flex items-center gap-6" style={{ position: "fixed", top: "20", left: "50%", transform: "translateX(-50%)", zIndex: "9" }}>
+        <div className="flex gap-10 px-10 py-2 rounded-full shadow-lg items-center bg-white border-[2px] border-black">
           <NavIcon 
             icon={Home} 
             onClick={() => router.push('/Dashboard')}
@@ -103,7 +103,7 @@ const Navigation: React.FC<NavigationProps> = ({
       </div>
       <div className="flex items-center gap-6 relative">
   {/* User Profile Card */}
-  <div className="flex items-center gap-3 px-5 py-2.5 rounded-full shadow-lg bg-white cursor-pointer transition-all duration-200 hover:shadow-xl hover:bg-gray-50">
+  <div className="border border-white flex-shrink-0 flex items-center justify-start gap-2 px-3 py-2 rounded-full shadow-lg cursor-pointer transition-all duration-200 hover:shadow-xl" style={{minWidth:"200px"}}>
     {/* Avatar */}
     <Avatar className="h-8 w-8"> 
       <AvatarImage 
@@ -115,7 +115,7 @@ const Navigation: React.FC<NavigationProps> = ({
     </Avatar>
 
     {/* User Name */}
-    <span className="text-gray-900 font-medium text-sm">
+    <span className="text-white font-medium text-sm">
       {fullName}
     </span>
   </div>

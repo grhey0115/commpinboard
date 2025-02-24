@@ -9,7 +9,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div
       style={{
-        background: "linear-gradient(to right, #ff6b5e, #d33c2f)",
+        background: "linear-gradient(to right, #D83F31, #6D0900)",
         minHeight: "100vh",
         width: "100vw",
         position: "relative", 
@@ -60,10 +60,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
        {/* Navigation */}
        <nav className="p-4 flex justify-between items-center">
-        <div className="text-black mt-6">
-          <h1 className="text-4xl  font-light">THE</h1>
-          <h2 className="text-5xl tracking-[0.4em] ">COMMUNITY</h2>
-          <h3 className="text-4xl font-bold">PINBOARD</h3>
+        <div className="text-white mt-6">
+          <h1 className="text-3xl font-light" style={{fontWeight:"100"}}>THE</h1>
+          <h2 className="text-3xl tracking-[0.4em] ">COMMUNITY</h2>
+          <h3 className="text-3xl font-bold">PINBOARD</h3>
         </div>
       </nav>
 
