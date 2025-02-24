@@ -59,4 +59,9 @@ export default {
   	}
   },
   plugins: [require("tailwindcss-animate")],
+  variants: {
+    extend: {
+      scale: ['active', 'group-hover'],
+    },
+  },
 } satisfies Config;

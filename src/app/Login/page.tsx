@@ -59,6 +59,10 @@ const LoginPage: React.FC = () => {
       localStorage.setItem("authenticatedUser", data.userName);
       localStorage.setItem("userId", data.userId);
       localStorage.setItem("fullName", data.fullName || "");
+      localStorage.setItem("userName", data.userName|| "");
+      localStorage.setItem("externalId", data.externalId|| "");
+      localStorage.setItem("password", data.passwordHash|| "");
+      localStorage.setItem("email", data.email|| "");
   
       router.push("/Dashboard");
     } catch (error: any) {
