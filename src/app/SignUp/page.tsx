@@ -33,16 +33,16 @@ const SignUp: React.FC = () => {
     setError(null);
   
     try {
-      const response = await fetch("http://localhost:5062/api/User", {
+      const response = await fetch("https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/User", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          externalId: crypto.randomUUID(), // ✅ Generate UUID for externalId
-          userName: username,  // ✅ Match API field name
+          externalId: crypto.randomUUID(), 
+          userName: username,  
           fullName: fullName,
           email: email,
-          passwordHash: password, // ✅ Match API field name
-          dateCreated: new Date().toISOString(), // ✅ Send correct date format
+          passwordHash: password, 
+          dateCreated: new Date().toISOString(), 
           dateUpdated: new Date().toISOString(),
         }),
       });

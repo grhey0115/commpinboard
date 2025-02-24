@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
   
     try {
       const response = await fetch(
-        "http://localhost:5062/api/user/authenticate",
+        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/user/authenticate",
         {
           method: "POST",
           headers: {

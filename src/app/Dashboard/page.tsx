@@ -57,7 +57,7 @@ const Dashboard: React.FC = () => {
     // Fetch all posts
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`http://localhost:5062/api/post/withUsers?userExternalId=${storedUserId}`);
+        const response = await fetch(`https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/post/withUsers?userExternalId=${storedUserId}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch posts: ${response.status}`);
         }
@@ -118,7 +118,7 @@ const Dashboard: React.FC = () => {
       }
   
       const response = await fetch(
-        `http://localhost:5062/api/pinnedpost?userId=${userId}`
+        `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost?userId=${userId}`
       );
   
       if (!response.ok) {
@@ -176,7 +176,7 @@ const Dashboard: React.FC = () => {
   
     try {
       const response = await fetch(
-        "http://localhost:5062/api/Post",
+        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/Post",
         {
           method: "POST",
           headers: {
@@ -280,7 +280,7 @@ const Dashboard: React.FC = () => {
       console.log("Constructed request body:", requestBody);
   
       const response = await fetch(
-        "http://localhost:5062/api/pinnedpost",
+        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost",
         {
           method,
           headers: {
@@ -329,7 +329,7 @@ const Dashboard: React.FC = () => {
   const refreshPosts = async () => {
     try {
       const storedUserId = localStorage.getItem("userId") || "1";
-      const response = await fetch(`http://localhost:5062/api/post/withUsers?userExternalId=${storedUserId}`);
+      const response = await fetch(`https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/post/withUsers?userExternalId=${storedUserId}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch posts: ${response.status}`);
       }

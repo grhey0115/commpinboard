@@ -216,7 +216,7 @@ const Pinned: React.FC = () => {
     try {
   
       // Use query parameter format as in Swagger
-      const apiUrl = `http://localhost:5062/api/pinnedpost?externalId=${externalId}`;
+      const apiUrl = `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/pinnedpost?externalId=${externalId}`;
       
   
       const response = await fetch(apiUrl, {

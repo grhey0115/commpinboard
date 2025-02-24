@@ -52,7 +52,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
   const fetchUserDetails = async (userId: number): Promise<string> => {
     try {
       const response = await fetch(
-        `http://localhost:5062/api/user`
+        `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/user`
       );
       if (!response.ok) throw new Error("Failed to fetch user details");
 
@@ -71,7 +71,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
     setFetchLoading(true); 
     try {
       const response = await fetch(
-        "http://localhost:5062/api/comment"
+        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/comment"
       );
       if (!response.ok) throw new Error("Failed to fetch comments");
 
@@ -113,7 +113,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
     try {
       setSubmitLoading(true); 
       const response = await fetch(
-        "http://localhost:5062/api/comment",
+        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/comment",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
