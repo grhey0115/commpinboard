@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
 import MainLayout from "@/Components/HomeLayout";
 import Navigation from "@/Components/Navigation";
+import { Pencil } from "lucide-react"; // Assuming you're using lucide-react for icons
 import "@/styles/scrollbar.css";
+import { Avatar, AvatarImage, AvatarFallback } from "@/Components/ui/avatar";
 
 interface UserData {
   userId: number;
@@ -26,15 +28,17 @@ const UpdateAccount: React.FC = () => {
     username: "",
     password: "",
   });
+  const [editData, setEditData] = useState<UserData | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+
   useEffect(() => {
-    console.log("Fetching user data from localStorage...");
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      console.log("Parsed user data from localStorage:", parsedUser);
       setUserData({
         userId: parsedUser.userId || 0,
         fullName: parsedUser.fullName || "",
@@ -42,30 +46,31 @@ const UpdateAccount: React.FC = () => {
         username: parsedUser.userName || "",
         password: parsedUser.password || "",
       });
-    } else {
-      console.log("No user data found in localStorage.");
     }
   }, []);
 
+  const handleEditClick = () => {
+    setEditData({ ...userData });
+    setIsModalOpen(true);
+  };
+
   const handleUpdateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editData) return;
+    setIsSubmitting(true);
 
     try {
-      console.log("Preparing to update account...");
       const externalId = localStorage.getItem("externalId") || "";
       const userId = localStorage.getItem("userId") || "";
-      console.log("Retrieved externalId from localStorage:", externalId);
 
       const updatedData = {
         userId: userId,
-        userName: userData.username,
-        fullName: userData.fullName,
-        email: userData.email,
-        passwordHash: userData.password,
+        userName: editData.username,
+        fullName: editData.fullName,
+        email: editData.email,
+        passwordHash: editData.password,
         externalId: externalId,
       };
-
-      console.log("Data being sent in PUT request:", updatedData);
 
       const updateResponse = await fetch(
         "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/user",
@@ -82,11 +87,13 @@ const UpdateAccount: React.FC = () => {
         throw new Error("Failed to update account");
       }
 
-      console.log("Account updated successfully!");
+      setUserData(editData);
+      setIsModalOpen(false);
       alert("Account updated successfully!");
     } catch (error: any) {
-      console.error("Update error:", error.message);
       alert(`Error updating account: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -100,85 +107,139 @@ const UpdateAccount: React.FC = () => {
       <div className="w-full max-w-2xl h-[600px] overflow-y-auto p-4 bg-transparent z-10 scrollbar-hide">
         <Card className="mb-4 bg-white border-black-700 hover:border-gray-600 transition-colors">
           <CardContent className="p-4">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">Update Account</h2>
-            <form onSubmit={handleUpdateAccount} className="space-y-4">
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  id="fullName"
-                  value={userData.fullName}
-                  onChange={(e) => {
-                    console.log("Updating fullName:", e.target.value);
-                    setUserData({ ...userData, fullName: e.target.value });
-                  }}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-800"
-                  placeholder="Enter your full name"
-                  required
-                />
+            {/* Profile Card Section */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-4">
+                  {/* Avatar Section */}
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage
+                      src={localStorage.getItem("avatar") || "https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortFlat&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light"}
+                      alt="User"
+                    />
+                    <AvatarFallback className="text-gray-600 text-xs">
+                      {localStorage.getItem("fullName")?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+
+                </div>
               </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={userData.email}
-                  onChange={(e) => {
-                    console.log("Updating email:", e.target.value);
-                    setUserData({ ...userData, email: e.target.value });
-                  }}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-800"
-                  placeholder="Enter your email"
-                  required
-                />
+
+                {/* User Info */}
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    {localStorage.getItem("fullName") || "Guest"}
+                  </h2>
+                  <h3 className="text-sm text-left text-gray-600">
+                    @{localStorage.getItem("userName") || "Unknown"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {localStorage.getItem("email") || "Not Provided"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  value={userData.username}
-                  onChange={(e) => {
-                    console.log("Updating username:", e.target.value);
-                    setUserData({ ...userData, username: e.target.value });
-                  }}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-800"
-                  placeholder="Enter your username"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={userData.password}
-                  onChange={(e) => {
-                    console.log("Updating password:", e.target.value);
-                    setUserData({ ...userData, password: e.target.value });
-                  }}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-800"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
-              <div className="flex justify-end">
-                <Button type="submit" className="bg-gray-700 text-white hover:bg-gray-600 transition-colors">
-                  Update Account
-                </Button>
-              </div>
-            </form>
+
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleEditClick}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <Pencil className="w-5 h-5" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
+
+        {/* Edit Modal */}
+        {isModalOpen && editData && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md m-4 max-h-[90vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold mb-6 text-gray-900">Edit Profile</h2>
+              <form onSubmit={handleUpdateAccount} className="space-y-4">
+              <div className="space-y-2">
+                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    value={editData.fullName}
+                    onChange={(e) => setEditData({ ...editData, fullName: e.target.value })}
+                    placeholder={localStorage.getItem("fullName") || "Enter your full name"}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={editData.username}
+                    onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                    placeholder={localStorage.getItem("userName") || "Enter your User Name"}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={editData.email}
+                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                    placeholder={localStorage.getItem("email") || "Enter your Email"}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    value={editData.password}
+                    onChange={(e) => setEditData({ ...editData, password: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsModalOpen(false)}
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400"
+                  >
+                    {isSubmitting ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      
     </MainLayout>
   );
 };
