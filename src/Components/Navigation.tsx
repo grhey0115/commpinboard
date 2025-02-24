@@ -65,16 +65,17 @@ const Navigation: React.FC<NavigationProps> = ({
   );
 
   return (
-    <nav className="w-full pt-2 mb-6 flex justify-between items-center">
+    <nav className="flex justify-between items-center" style={{width: "100vw",zIndex:"11", top:"0", position:"fixed", padding:"1rem 1rem 0 1rem"}}>
       <div className="flex flex-col text-white leading-tight">
         <h1 className="text-left text-lg font-light">THE</h1>
         <h1 className="text-left text-lg" style={{ letterSpacing: "0.3em" }}>COMMUNITY</h1>
         <h1 className="text-left text-lg font-bold">PINBOARD</h1>
       </div>
 
-      <div className="flex items-center gap-6" style={{ position: "fixed", top: "20", left: "50%", transform: "translateX(-50%)", zIndex: "9" }}>
-        <div className="flex gap-10 px-10 py-2 rounded-full shadow-lg items-center bg-white border-[2px] border-black">
-          <NavIcon 
+      <div className="flex items-center gap-6" style={{ position: "fixed", top: "20", left: "50%", transform: "translateX(-50%)", zIndex: "9",overflow:"visible" }}>
+        <div style={{backgroundColor:"#161616"}} className="flex gap-10 px-10 py-2 rounded-full shadow-xl items-center bg-white border-[2px] border-black">
+          <NavIcon
+            color="text-white"
             icon={Home} 
             onClick={() => router.push('/Dashboard')}
           />
@@ -84,18 +85,19 @@ const Navigation: React.FC<NavigationProps> = ({
             color="text-red-600 hover:text-red-700"
           />
           <NavIcon 
+            color="text-white"
             icon={Pin} 
             onClick={() => router.push('/Pinned')}
           />
           {!hideSearchBar && (
             <div className="relative group" ref={searchRef}>
-              <Search className="absolute left-3 top-2.5 text-gray-600" size={20} />
+              <Search className="absolute left-3 top-2.5 text-white" size={20} />
               <Input
                 type="text"
                 placeholder="Search posts..."
                 value={searchTerm}
                 onChange={(e) => onSearchChange?.(e.target.value)}
-                className="pl-10 bg-white border-gray-300 text-gray-900 w-64 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                className="rounded-3xl pl-10 bg-transparent border-gray-300 text-white w-64 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
               />
             </div>
           )}
@@ -103,7 +105,7 @@ const Navigation: React.FC<NavigationProps> = ({
       </div>
       <div className="flex items-center gap-6 relative">
   {/* User Profile Card */}
-  <div className="border border-white flex-shrink-0 flex items-center justify-start gap-2 px-3 py-2 rounded-full shadow-lg cursor-pointer transition-all duration-200 hover:shadow-xl" style={{minWidth:"200px"}}>
+  <div className="border border-white flex-shrink-0 flex items-center justify-start gap-2 px-3 py-1 rounded-full shadow-lg cursor-pointer transition-all duration-200 hover:shadow-xl" style={{minWidth:"200px"}}>
     {/* Avatar */}
     <Avatar className="h-8 w-8"> 
       <AvatarImage 

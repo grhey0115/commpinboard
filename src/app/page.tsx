@@ -72,12 +72,12 @@ const LandingPage: React.FC = () => {
 
         {/* Upper Right Dots */}
         <div
-        className="absolute top-5 mt-7 right-5 w-24 h-24 bg-contain bg-no-repeat z-10"
+        className="absolute top-5 mt-7 right-5 w-24 h-24 bg-contain bg-no-repeat z-8"
         style={{ backgroundImage: "url('/dots.png')" }}
       />
        {/* Lower Left Dots */}
        <div
-        className="absolute bottom-5 left-5 ml-5 mb-5 w-24 h-24 bg-contain bg-no-repeat z-10"
+        className="absolute bottom-5 left-5 ml-5 mb-5 w-24 h-24 bg-contain bg-no-repeat z-8"
         style={{ backgroundImage: "url('/dots.png')" }}
       />
       

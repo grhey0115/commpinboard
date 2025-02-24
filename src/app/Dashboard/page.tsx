@@ -376,7 +376,7 @@ const Dashboard: React.FC = () => {
       onSearchChange={(value) => setSearchTerm(value)}
     />  
 
-      <div className="w-full max-w-3xl h-[85vh] overflow-y-auto p-0 bg-transparent z-10 scrollbar-hide">
+      <div className="w-full max-w-3xl h-[100vh] overflow-y-auto p-0 pt-[8rem] bg-transparent z-10 scrollbar-hide">
         {loading ? (
           <p className="text-center text-white">Loading posts...</p>
         ) : error ? (
@@ -427,7 +427,7 @@ const Dashboard: React.FC = () => {
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setSelectedPost(post)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
                 >
                   <MessageSquare size={18} className="text-gray-600" />
                   <span className="text-gray-700">Comments</span>

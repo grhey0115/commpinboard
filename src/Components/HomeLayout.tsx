@@ -26,7 +26,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           backgroundImage: "url('/lower.svg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          zIndex: 1,
+          zIndex: 8,
         }}
       />
 
@@ -42,7 +42,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           height: "96px",
           backgroundImage: "url('/dots.png')",
           backgroundSize: "contain",
-          zIndex: 10,
+          zIndex: 8,
         }}
       />
 
