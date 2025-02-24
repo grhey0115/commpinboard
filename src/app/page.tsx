@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent } from "@/Components/ui/card";
 import { MoreVertical } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface ImageCarouselProps {
   images: string[];
@@ -45,9 +46,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
     </div>
   );
 };
-
 const LandingPage: React.FC = () => {
   const images: string[] = ["/front1.avif", "/front2.avif", "/front3.webp"];
+  const router = useRouter();
 
   return (
     <div
@@ -109,10 +110,14 @@ const LandingPage: React.FC = () => {
           <Button
             variant="outline"
             className="w-full z-10 bg-transparent text-white border-white hover:bg-white hover:text-red-600"
+            onClick={() => router.push('/Login')}
           >
             SIGN IN
           </Button>
-          <Button className="w-full z-10 bg-white text-red-600 hover:bg-gray-100">
+          <Button 
+            className="w-full z-10 bg-white text-red-600 hover:bg-gray-100"
+            onClick={() => router.push('/SignUp')}
+          >
             SIGN UP
           </Button>
         </div>
