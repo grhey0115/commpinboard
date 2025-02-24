@@ -23,46 +23,53 @@ const LoginPage: React.FC = () => {
   const router = useRouter();
 
   const handleLogin = async () => {
-    const validation = loginSchema.safeParse({ username, password });
-    if (!validation.success) {
-      setError(validation.error.errors[0].message);
-      return;
-    }
-
     setLoading(true);
     setError(null);
-
+  
     try {
       const response = await fetch(
-        `http://localhost:5062/api/User/authenticate?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
-        { method: "GET", headers: { "Content-Type": "application/json" } }
+        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/user/authenticate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          body: JSON.stringify({
+            userName: username, // FIX: Changed from "username" to "userName"
+            password: password,
+          }),
+        }
       );
-
-      const text = await response.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error("Invalid JSON response from server.");
-      }
-
+  
       if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+        const errorText = await response.text();
+        throw new Error(`HTTP Error ${response.status}: ${errorText}`);
       }
-
-      // Save token and userId to localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userId", data.userId); 
-      localStorage.setItem("fullName", data.fullName);
-
-      // Redirect to dashboard
+  
+      const data = await response.json();
+      console.log("API Response:", data);
+  
+      // FIX: Check if userName exists instead of success flag
+      if (!data.userName) {
+        throw new Error("Invalid credentials or missing user data");
+      }
+  
+      // Store user details
+      localStorage.setItem("authenticatedUser", data.userName);
+      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("fullName", data.fullName || "");
+  
       router.push("/Dashboard");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (error: any) {
+      console.error("Login Error:", error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
+  
+  
 
   return (
     <MainLayout>

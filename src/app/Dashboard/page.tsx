@@ -1,25 +1,33 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardContent } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Textarea } from "@/Components/ui/textarea";
-import { Clock, User, Settings, Home, CirclePlus, Pin, X } from "lucide-react";
+import PostModal from "@/Components/PostModal";
+import { useRouter } from "next/navigation";
+import useAuth from "@/hooks/useAuth";
+import { Clock, User, Settings, Home, CirclePlus, Pin, Search, Calendar, MapPin, MessageSquare, Heart } from "lucide-react";
 import MainLayout from "@/Components/HomeLayout";
+import { Input } from "@/Components/ui/input";
+import Navigation from "@/Components/Navigation";
+import { formatDistanceToNow } from "date-fns";
 import "@/styles/scrollbar.css";
+import CommentModal from "@/Components/CommentModal";
 
 interface Post {
   externalId: string;
-  userExternalId: string;
+  fullName: string;
+  postId: number;
   title: string;
   content: string;
   eventDate: string;
   location: string;
   dateCreated: string;
+  isPinned?: boolean;
 }
 
 const Dashboard: React.FC = () => {
+  useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,177 +35,395 @@ const Dashboard: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<'all' | 'upcoming' | 'past'>('all');
   const settingsRef = useRef<HTMLDivElement>(null);
   const [fullName, setFullName] = useState("");
+  const [userId, setUserId] = useState("");
+  const router = useRouter();
+  const [eventDate, setEventDate] = useState<string | null>(null);
+  const [location, setLocation] = useState<string>("");
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [pinnedPosts, setPinnedPosts] = useState<Set<string>>(new Set());
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
-  // Retrieve fullName from localStorage on component mount
   useEffect(() => {
     const storedName = localStorage.getItem("fullName") || "Guest";
     setFullName(storedName);
-  }, []);
-
-  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId") || "1";
+    setUserId(storedUserId);
+  
+    // Fetch all posts
     const fetchPosts = async () => {
       try {
-        const response = await fetch("http://localhost:5062/api/Post");
+        const response = await fetch(`https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/post/withUsers?userExternalId=${storedUserId}`);
         if (!response.ok) {
-          throw new Error("Failed to fetch posts");
+          throw new Error(`Failed to fetch posts: ${response.status}`);
         }
+    
         const data = await response.json();
-        setPosts(data);
+        console.log("API Response:", data);
+    
+        const postsArray = data?.$values || [];
+    
+        if (!Array.isArray(postsArray)) {
+          throw new Error("Invalid API response format");
+        }
+    
+        const formattedPosts = postsArray.map((post) => ({
+          externalId: post.externalId,
+          postId: post.postId,
+          fullName: post.user?.fullName || "Unknown User",
+          title: post.title,
+          content: post.content,
+          eventDate: post.eventDate ? new Date(post.eventDate).toISOString() : "",
+          location: post.location || "No location",
+          dateCreated: post.dateCreated ? new Date(post.dateCreated).toISOString() : new Date().toISOString(),
+        }));
+    
+        const sortedPosts = formattedPosts.sort((a, b) =>
+          new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
+        );
+    
+        setPosts(sortedPosts);
       } catch (err: any) {
+        console.error("Fetch error:", err.message);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-
+    
+  
     fetchPosts();
+  
+    fetchPinnedPosts();
   }, []);
+  
+
+
+  const fetchPinnedPosts = async () => {
+    try {
+      const userIdString = localStorage.getItem("userId");
+      if (!userIdString) {
+        console.log("User not found. Please log in.");
+        return;
+      }
+  
+      const userId = Number(userIdString);
+      if (isNaN(userId)) {
+        console.log("Invalid User ID. Please log in again.");
+        return;
+      }
+  
+      const response = await fetch(
+        `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost?userId=${userId}`
+      );
+  
+      if (!response.ok) {
+        throw new Error(`Failed to fetch pinned posts: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log("Fetched pinned posts:", data);
+  
+      const pinnedPostIds = data?.$values?.map((pinnedPost: any) => pinnedPost.externalId) || [];
+      setPinnedPosts(new Set(pinnedPostIds));
+    } catch (error) {
+      console.error("Error fetching pinned posts:", error);
+    }
+  };
+  
+
+  const filteredPosts = posts;
 
   const addPost = async () => {
     if (!title.trim() || !content.trim()) {
       alert("Title and Content are required!");
       return;
     }
-
-    const userId = 1; // Replace with dynamic userId from localStorage or state
-
+  
+    const userIdString = localStorage.getItem("userId");
+  
+    if (!userIdString) {
+      alert("User not found. Please log in.");
+      return;
+    }
+  
+    const userId = parseInt(userIdString, 10);
+  
+    if (isNaN(userId)) {
+      alert("Invalid User ID. Please log in again.");
+      return;
+    }
+  
+    // Constructing the post data
+    const postData: any = {
+      title,
+      content,
+      userId,
+    };
+  
+    // Include optional fields only if they exist
+    if (eventDate) {
+      postData.eventDate = eventDate;
+    }
+  
+    if (location.trim()) {
+      postData.location = location;
+    }
+  
     try {
-      const response = await fetch("http://localhost:5062/api/Post", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          externalId: crypto.randomUUID(), // Generate a new GUID
-          title,
-          content,
-          eventDate: new Date().toISOString(), // Current date-time
-          location: "Some location", 
-          userId, 
-        }),
-      });
-
+      const response = await fetch(
+        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/Post",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postData),
+        }
+      );
+  
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add post");
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to add post");
       }
-
+  
       const newPost = await response.json();
-      setPosts((prevPosts) => [newPost, ...prevPosts]); 
+  
+      // Add the new post to the UI
+      setPosts((prevPosts) => [newPost, ...prevPosts]);
+  
+      // Reset form fields
       setShowModal(false);
       setTitle("");
       setContent("");
+      setEventDate(null);
+      setLocation("");
     } catch (err: any) {
       alert(`Error adding post: ${err.message}`);
     }
+
+    console.log("Sending data:", JSON.stringify(postData, null, 2));
   };
+  
+  
+  
+  
+
+
+
+  const toggleLike = (postId: string) => {
+    setLikedPosts(prev => {
+      const newLiked = new Set(prev);
+      if (newLiked.has(postId)) {
+        newLiked.delete(postId);
+      } else {
+        newLiked.add(postId);
+      }
+      return newLiked;
+    });
+  };
+
+  const handlePinPost = async (postId: string) => {
+    try {
+      console.log("Starting handlePinPost for postId:", postId);
+  
+      const userIdString = localStorage.getItem("userId");
+      console.log("Retrieved userId from localStorage:", userIdString);
+  
+      if (!userIdString) {
+        alert("User not found. Please log in.");
+        return;
+      }
+  
+      const userId = Number(userIdString);
+      console.log("Parsed userId:", userId);
+  
+      if (isNaN(userId)) {
+        alert("Invalid User ID. Please log in again.");
+        return;
+      }
+  
+      const isPinned = pinnedPosts.has(postId);
+      console.log("Is post already pinned?", isPinned);
+  
+      const method = isPinned ? "DELETE" : "POST";
+      console.log("Using HTTP method:", method);
+  
+      // Find the post being pinned/unpinned
+      const postToPin = posts.find((post) => post.externalId === postId);
+      console.log("Found post to pin/unpin:", postToPin);
+  
+      if (!postToPin) {
+        alert("Post not found.");
+        return;
+      }
+  
+      // Use the post's externalId and postId
+      const externalId = postToPin.externalId;
+      const numericPostId = postToPin.postId; // Use the postId from the post object
+      console.log("Using post's externalId:", externalId);
+      console.log("Using post's postId:", numericPostId);
+  
+      // Construct the request body as expected by the API
+      const requestBody = {
+        externalId: externalId, // Use the post's externalId
+        postId: numericPostId, // Use the post's postId
+        userId: userId, // Use the logged-in user's ID
+        dateCreated: new Date().toISOString(), 
+        dateUpdated: new Date().toISOString(), 
+      };
+  
+      console.log("Constructed request body:", requestBody);
+  
+      const response = await fetch(
+        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost",
+        {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+  
+      console.log("Response status:", response.status);
+  
+      // Check if the response is successful
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server returned an error:", errorText);
+        throw new Error(errorText || `Failed to ${isPinned ? "unpin" : "pin"} post`);
+      }
+  
+      // Update the pinnedPosts state
+      setPinnedPosts((prev) => {
+        const newPinned = new Set(prev);
+        isPinned ? newPinned.delete(postId) : newPinned.add(postId);
+        console.log("Updated pinnedPosts state:", newPinned);
+        return newPinned;
+      });
+  
+      // Update the posts state to reflect the pinned status
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.externalId === postId ? { ...post, isPinned: !isPinned } : post
+        )
+      );
+  
+      console.log("Successfully updated pinned status for post:", postId);
+  
+    } catch (error) {
+      console.error("Error toggling pin status:", error);
+      alert("Failed to update pin status. Please try again.");
+    }
+  };
+  
+  
+  
+  
 
   return (
     <MainLayout>
-      {/* Top Navigation Bar */}
-      <nav className="w-full p-4 flex justify-between items-center text-white">
-        <div className="text-2xl font-bold text-left">
-          THE <br /> COMMUNITY <br /> PINBOARD
-        </div>
+       <Navigation
+      onShowModal={() => setShowModal(true)}
+      searchTerm={searchTerm}
+      onSearchChange={(value) => setSearchTerm(value)}
+    />  
 
-        <div className="flex gap-8 bg-black px-8 py-4 rounded-full items-center">
-          <Home size={20} className="cursor-pointer" />
-          <CirclePlus
-            size={20}
-            className="cursor-pointer text-red-500"
-            onClick={() => setShowModal(true)}
-          />
-          <Pin size={20} className="cursor-pointer" />
-        </div>
-
-        <div className="flex items-center gap-4 relative">
-          <div className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full cursor-pointer">
-            <User size={20} />
-            <span>{fullName}</span> {/* Display fullName dynamically */}
-          </div>
-          <div className="relative" ref={settingsRef}>
-            <Settings
-              className="cursor-pointer"
-              size={24}
-              onClick={() => setShowSettings(!showSettings)}
-            />
-            {showSettings && (
-              <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg py-2 z-50">
-                <button className="w-full text-left px-4 py-2 hover:bg-gray-200">Update Account</button>
-                <button className="w-full text-left px-4 py-2 hover:bg-gray-200">Logout</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Posts Section */}
       <div className="w-full max-w-2xl h-[600px] overflow-y-auto p-4 bg-transparent z-10 scrollbar-hide">
         {loading ? (
           <p className="text-center text-white">Loading posts...</p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
-        ) : posts.length === 0 ? (
+        ) : filteredPosts.length === 0 ? (
           <p className="text-center text-white">No posts available</p>
         ) : (
-          posts.map((post, index) => (
-            <Card key={index} className="mb-4">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <User className="text-gray-500" size={16} />
-                    <span className="font-bold">{post.userExternalId || "Unknown User"}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-gray-500">
-                    <Clock size={16} />
-                    <span>{new Date(post.dateCreated).toLocaleTimeString()}</span>
-                  </div>
+          filteredPosts.map((post) => (
+            <Card key={post.externalId} className="mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              {/* Header with user info and timestamp */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <User className="text-gray-600" size={20} />
+                  <span className="font-semibold text-gray-900">{post.fullName || "Unknown User"}</span>
                 </div>
-                <h2 className="text-lg font-semibold mt-2 text-left">{post.title}</h2>
-                <p className="text-sm text-gray-700 mt-2">{post.content}</p>
-                <div className="mt-4 flex gap-2">
-                  <Button className="bg-gray-200 text-gray-700">💬 Comments</Button>
-                  <Button className="bg-transparent text-red-600">📌 Pin</Button>
+                <span className="text-sm text-gray-500">
+                  {post.dateCreated && !isNaN(new Date(post.dateCreated).getTime()) &&
+                    formatDistanceToNow(new Date(post.dateCreated), { addSuffix: true })}
+                </span>
+              </div>
+
+              {/* Post title and content */}
+              <h2 className="text-xl font-bold text-gray-900 mb-3 text-left">{post.title}</h2>
+              <p className="text-gray-700 mb-4 text-left">{post.content}</p>
+
+              {/* Event details */}
+              <div className="space-y-2 mb-4">
+                {post.eventDate && !isNaN(new Date(post.eventDate).getTime()) && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Calendar size={18} />
+                    <span>{new Date(post.eventDate).toLocaleDateString()}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-gray-600">
+                  <MapPin size={18} />
+                  <span>{post.location}</span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => setSelectedPost(post)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  <MessageSquare size={18} className="text-gray-600" />
+                  <span className="text-gray-700">Comments</span>
+                </button>
+                <button
+                  onClick={() => handlePinPost(post.externalId)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    pinnedPosts.has(post.externalId)
+                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <Pin size={18} />
+                  <span>{pinnedPosts.has(post.externalId) ? 'Pinned' : 'Pin'}</span>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
           ))
         )}
       </div>
 
-      {/* Add Post Modal */}
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
-          <div className="bg-white p-6 rounded-lg w-96 shadow-lg relative">
-            <button className="absolute top-2 right-2" onClick={() => setShowModal(false)}>
-              <X size={20} />
-            </button>
-            <h2 className="text-lg font-bold mb-4">Create a New Post</h2>
-            <Input
-              type="text"
-              placeholder="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full mb-2"
-            />
-            <Textarea
-              placeholder="What's on your mind?"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full mb-4"
-            />
-            <div className="flex justify-end gap-2">
-              <Button className="bg-gray-300 text-gray-700" onClick={() => setShowModal(false)}>
-                Cancel
-              </Button>
-              <Button className="bg-blue-500 text-white" onClick={addPost}>
-                Post
-              </Button>
-            </div>
-          </div>
-        </div>
+      <PostModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        title={title}
+        setTitle={setTitle}
+        content={content}
+        setContent={setContent}
+        eventDate={eventDate}
+        setEventDate={setEventDate}
+        location={location}
+        setLocation={setLocation}
+        addPost={addPost}
+      />
+
+      {selectedPost && (
+        <CommentModal
+          isOpen={!!selectedPost}
+          onClose={() => setSelectedPost(null)}
+          postId={selectedPost.postId}
+          postTitle={selectedPost.title}
+          postContent={selectedPost.content}
+        />
       )}
     </MainLayout>
   );
