@@ -81,7 +81,7 @@ const Pinned: React.FC = () => {
 
       try {
         const response = await fetch(
-          "http://localhost:5062/api/pinnedpost"
+          "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost"
         );
         if (!response.ok) {
           throw new Error(`Failed to fetch pinned posts: ${response.status}`);
@@ -104,7 +104,7 @@ const Pinned: React.FC = () => {
         setPinnedPosts(new Set(pinnedPostIds));
 
         const postsResponse = await fetch(
-          "http://localhost:5062/api/Post/withusers"
+          "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/Post/withusers"
         );
         if (!postsResponse.ok) {
           throw new Error(`Failed to fetch posts: ${postsResponse.status}`);
@@ -181,7 +181,7 @@ const Pinned: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5062/api/Post",
+        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/Post",
         {
           method: "POST",
           headers: {
@@ -216,7 +216,7 @@ const Pinned: React.FC = () => {
     try {
   
       // Use query parameter format as in Swagger
-      const apiUrl = `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/pinnedpost?externalId=${externalId}`;
+      const apiUrl = `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost?externalId=${externalId}`;
       
   
       const response = await fetch(apiUrl, {

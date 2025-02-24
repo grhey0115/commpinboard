@@ -136,7 +136,17 @@ const Dashboard: React.FC = () => {
   };
   
 
-  const filteredPosts = posts;
+  const filteredPosts = useMemo(() => {
+    return posts.filter((post) => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        post.title.toLowerCase().includes(searchLower) ||
+        post.content.toLowerCase().includes(searchLower) ||
+        post.fullName.toLowerCase().includes(searchLower)
+        
+      );
+    });
+  }, [posts, searchTerm]);
 
   const addPost = async () => {
     if (!title.trim() || !content.trim()) {
@@ -372,10 +382,12 @@ const Dashboard: React.FC = () => {
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : filteredPosts.length === 0 ? (
-          <p className="text-center text-white">No posts available</p>
+          <p className="text-center text-white">
+            {searchTerm ? "No posts found matching your search" : "No posts available"}
+          </p>
         ) : (
           filteredPosts.map((post) => (
-            <Card key={post.externalId} className="mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <Card key={`${post.externalId}-${post.postId}`} className="mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               {/* Header with user info and timestamp */}
               <div className="flex items-center justify-between mb-4">

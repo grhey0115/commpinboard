@@ -25,7 +25,7 @@ const LoginPage: React.FC = () => {
   const handleLogin = async () => {
     setLoading(true);
     setError(null);
-  
+
     try {
       const response = await fetch(
         "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/user/authenticate",
@@ -36,38 +36,42 @@ const LoginPage: React.FC = () => {
             "Accept": "application/json",
           },
           body: JSON.stringify({
-            userName: username, 
+            userName: username,
             password: password,
           }),
         }
       );
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP Error ${response.status}: ${errorText}`);
-      }
-  
+
       const data = await response.json();
-      console.log("API Response:", data);
-  
-      // FIX: Check if userName exists instead of success flag
-      if (!data.userName) {
-        throw new Error("Invalid credentials or missing user data");
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError("Invalid username or password");
+        } else if (response.status === 404) {
+          setError("User not found");
+        } else {
+          setError("Login failed. Please try again.");
+        }
+        return;
       }
-  
-      // Store user details
+
+      if (!data.userName) {
+        setError("Invalid credentials");
+        return;
+      }
+
+      // Store user details if successful
       localStorage.setItem("authenticatedUser", data.userName);
       localStorage.setItem("userId", data.userId);
       localStorage.setItem("fullName", data.fullName || "");
-      localStorage.setItem("userName", data.userName|| "");
-      localStorage.setItem("externalId", data.externalId|| "");
-      localStorage.setItem("password", data.passwordHash|| "");
-      localStorage.setItem("email", data.email|| "");
-  
+      localStorage.setItem("userName", data.userName || "");
+      localStorage.setItem("externalId", data.externalId || "");
+      localStorage.setItem("email", data.email || "");
+
       router.push("/Dashboard");
     } catch (error: any) {
       console.error("Login Error:", error);
-      setError(error.message);
+      setError("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
