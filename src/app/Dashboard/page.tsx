@@ -12,6 +12,7 @@ import { Input } from "@/Components/ui/input";
 import Navigation from "@/Components/Navigation";
 import { formatDistanceToNow } from "date-fns";
 import "@/styles/scrollbar.css";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar"
 import CommentModal from "@/Components/CommentModal";
 
 interface Post {
@@ -56,7 +57,7 @@ const Dashboard: React.FC = () => {
     // Fetch all posts
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/post/withUsers?userExternalId=${storedUserId}`);
+        const response = await fetch(`http://localhost:5062/api/post/withUsers?userExternalId=${storedUserId}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch posts: ${response.status}`);
         }
@@ -117,7 +118,7 @@ const Dashboard: React.FC = () => {
       }
   
       const response = await fetch(
-        `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost?userId=${userId}`
+        `http://localhost:5062/api/pinnedpost?userId=${userId}`
       );
   
       if (!response.ok) {
@@ -175,7 +176,7 @@ const Dashboard: React.FC = () => {
   
     try {
       const response = await fetch(
-        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/Post",
+        "http://localhost:5062/api/Post",
         {
           method: "POST",
           headers: {
@@ -279,7 +280,7 @@ const Dashboard: React.FC = () => {
       console.log("Constructed request body:", requestBody);
   
       const response = await fetch(
-        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost",
+        "http://localhost:5062/api/pinnedpost",
         {
           method,
           headers: {
@@ -325,6 +326,37 @@ const Dashboard: React.FC = () => {
   
   
   
+  const refreshPosts = async () => {
+    try {
+      const storedUserId = localStorage.getItem("userId") || "1";
+      const response = await fetch(`http://localhost:5062/api/post/withUsers?userExternalId=${storedUserId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch posts: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      const postsArray = data?.$values || [];
+  
+      const formattedPosts: Post[] = postsArray.map((post: any) => ({
+        externalId: post.externalId,
+        postId: post.postId,
+        fullName: post.user?.fullName || "Unknown User",
+        title: post.title,
+        content: post.content,
+        eventDate: post.eventDate ? new Date(post.eventDate).toISOString() : "",
+        location: post.location || "No location",
+        dateCreated: post.dateCreated ? new Date(post.dateCreated).toISOString() : new Date().toISOString(),
+      }));
+  
+      const sortedPosts = formattedPosts.sort((a, b) =>
+        new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
+      );
+  
+      setPosts(sortedPosts);
+    } catch (error) {
+      console.error("Error refreshing posts:", error);
+    }
+  };
 
   return (
     <MainLayout>
@@ -348,7 +380,11 @@ const Dashboard: React.FC = () => {
               {/* Header with user info and timestamp */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <User className="text-gray-600" size={20} />
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortFlat&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light" alt="User" />
+                  <AvatarFallback className="text-gray-600 text-xs">U</AvatarFallback>
+                </Avatar>
+
                   <span className="font-semibold text-gray-900">{post.fullName || "Unknown User"}</span>
                 </div>
                 <span className="text-sm text-gray-500">
@@ -379,7 +415,7 @@ const Dashboard: React.FC = () => {
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setSelectedPost(post)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
                 >
                   <MessageSquare size={18} className="text-gray-600" />
                   <span className="text-gray-700">Comments</span>
@@ -389,7 +425,7 @@ const Dashboard: React.FC = () => {
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                     pinnedPosts.has(post.externalId)
                       ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-red-100 text-red-700 hover:bg-red-200'
                   }`}
                 >
                   <Pin size={18} />
@@ -401,6 +437,8 @@ const Dashboard: React.FC = () => {
           ))
         )}
       </div>
+
+      
 
       <PostModal
         showModal={showModal}
@@ -414,6 +452,7 @@ const Dashboard: React.FC = () => {
         location={location}
         setLocation={setLocation}
         addPost={addPost}
+        onSuccess={refreshPosts}
       />
 
       {selectedPost && (

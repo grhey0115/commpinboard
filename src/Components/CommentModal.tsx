@@ -4,6 +4,7 @@ import { Button } from "@/Components/ui/button";
 import { Textarea } from "@/Components/ui/textarea";
 import { formatDistanceToNow } from "date-fns";
 import { User, Send } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar"
 
 interface Comment {
   commentId: number;
@@ -51,7 +52,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
   const fetchUserDetails = async (userId: number): Promise<string> => {
     try {
       const response = await fetch(
-        `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/user`
+        `http://localhost:5062/api/user`
       );
       if (!response.ok) throw new Error("Failed to fetch user details");
 
@@ -67,10 +68,10 @@ const CommentModal: React.FC<CommentModalProps> = ({
   };
 
   const fetchComments = async () => {
-    setFetchLoading(true); // Start loading
+    setFetchLoading(true); 
     try {
       const response = await fetch(
-        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/comment"
+        "http://localhost:5062/api/comment"
       );
       if (!response.ok) throw new Error("Failed to fetch comments");
 
@@ -94,7 +95,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
     } catch (error) {
       console.error("Error fetching comments:", error);
     } finally {
-      setFetchLoading(false); // End loading
+      setFetchLoading(false); 
     }
   };
 
@@ -110,9 +111,9 @@ const CommentModal: React.FC<CommentModalProps> = ({
     const currentDate = new Date().toISOString();
 
     try {
-      setSubmitLoading(true); // Start submitting loading
+      setSubmitLoading(true); 
       const response = await fetch(
-        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/comment",
+        "http://localhost:5062/api/comment",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -129,11 +130,11 @@ const CommentModal: React.FC<CommentModalProps> = ({
       if (!response.ok) throw new Error("Failed to add comment");
 
       setNewComment("");
-      await fetchComments(); // Refresh comments
+      await fetchComments(); 
     } catch (error) {
       console.error("Error adding comment:", error);
     } finally {
-      setSubmitLoading(false); // End submitting loading
+      setSubmitLoading(false); 
     }
   };
 
@@ -183,7 +184,10 @@ const CommentModal: React.FC<CommentModalProps> = ({
                     className="flex gap-3 transition-all duration-200 hover:bg-gray-50 p-2 rounded-lg"
                   >
                     <div className="bg-gray-200 rounded-full p-2 h-9 w-9 flex items-center justify-center flex-shrink-0">
-                      <User className="h-4 w-4 text-gray-600" />
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortFlat&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light" alt="User" />
+                      <AvatarFallback className="text-gray-600 text-xs">U</AvatarFallback>
+                    </Avatar>
                     </div>
                     <div className="flex-1">
                       <div className="bg-gray-100 rounded-xl p-3 shadow-sm">
@@ -192,12 +196,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
                         </div>
                         <p className="text-gray-700 text-sm mt-1">{comment.content}</p>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1.5">
-                        {formatDistanceToNow(new Date(comment.dateCreated), { addSuffix: true })}
-                        {comment.dateUpdated !== comment.dateCreated && (
-                          <span className="ml-2 italic">(Edited)</span>
-                        )}
-                      </div>
+                     
                     </div>
                   </div>
                 ))
@@ -207,7 +206,10 @@ const CommentModal: React.FC<CommentModalProps> = ({
             <div className="p-4 border-t border-gray-200 bg-gray-50">
               <div className="flex items-center gap-3">
                 <div className="bg-gray-200 rounded-full p-2 h-9 w-9 flex items-center justify-center flex-shrink-0">
-                  <User className="h-4 w-4 text-gray-600" />
+                <Avatar className="h-8 w-8">
+                      <AvatarImage src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortFlat&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light" alt="User" />
+                      <AvatarFallback className="text-gray-600 text-xs">U</AvatarFallback>
+                    </Avatar>
                 </div>
                 <Textarea
                   placeholder="Add a comment..."

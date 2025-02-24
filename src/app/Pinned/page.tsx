@@ -10,10 +10,13 @@ import { Clock, User, Pin, Calendar, MapPin, MessageSquare } from "lucide-react"
 import MainLayout from "@/Components/HomeLayout";
 import Navigation from "@/Components/Navigation";
 import { formatDistanceToNow } from "date-fns";
+import CommentModal from "@/Components/CommentModal";
+
 import "@/styles/scrollbar.css";
 
 interface Post {
   externalId: string;
+  postId: number;
   fullName: string;
   title: string;
   content: string;
@@ -58,6 +61,7 @@ const Pinned: React.FC = () => {
   const [location, setLocation] = useState("");
   const router = useRouter();
   const [pinnedPosts, setPinnedPosts] = useState<Set<string>>(new Set());
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   useEffect(() => {
     const fetchPinnedPosts = async () => {
@@ -77,7 +81,7 @@ const Pinned: React.FC = () => {
 
       try {
         const response = await fetch(
-          "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost"
+          "http://localhost:5062/api/pinnedpost"
         );
         if (!response.ok) {
           throw new Error(`Failed to fetch pinned posts: ${response.status}`);
@@ -100,7 +104,7 @@ const Pinned: React.FC = () => {
         setPinnedPosts(new Set(pinnedPostIds));
 
         const postsResponse = await fetch(
-          "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/Post/withusers"
+          "http://localhost:5062/api/Post/withusers"
         );
         if (!postsResponse.ok) {
           throw new Error(`Failed to fetch posts: ${postsResponse.status}`);
@@ -115,6 +119,7 @@ const Pinned: React.FC = () => {
 
         const formattedPosts = postsArray.map((post: any) => ({
           externalId: post.externalId,
+          postId: post.postId,
           fullName: post.user?.fullName || "Unknown User",
           title: post.title,
           content: post.content,
@@ -176,7 +181,7 @@ const Pinned: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/Post",
+        "http://localhost:5062/api/Post",
         {
           method: "POST",
           headers: {
@@ -211,19 +216,18 @@ const Pinned: React.FC = () => {
     try {
   
       // Use query parameter format as in Swagger
-      const apiUrl = `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/pinnedpost?externalId=${externalId}`;
-      console.log("API URL:", apiUrl);
+      const apiUrl = `http://localhost:5062/api/pinnedpost?externalId=${externalId}`;
+      
   
       const response = await fetch(apiUrl, {
         method: "DELETE",
       });
   
-      // Log the response status and details
-      console.log("Response status:", response.status);
+      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Error response text:", errorText);
-        throw new Error(`Failed to unpin post: ${response.status}`);
+        
+        throw new Error(`Post unpinned successfully`);
       }
   
       // Log success message
@@ -241,8 +245,7 @@ const Pinned: React.FC = () => {
         prevPosts.filter((post) => post.externalId !== externalId)
       );
     } catch (err: any) {
-      console.error("Unpin error:", err.message);
-      alert(`Error unpinning post: ${err.message}`);
+      alert(` ${err.message}`);
     }
   };
 
@@ -264,59 +267,70 @@ const Pinned: React.FC = () => {
         ) : (
           posts.map((post) => (
             <Card key={post.externalId} className="mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <User className="text-black-400" size={16} />
-                    <span className="font-bold text-black">
-                      {post.fullName || "Unknown User"}
+            <CardContent className="p-6">
+              {/* Header with user info and timestamp */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <User className="text-gray-600" size={20} />
+                  <span className="font-semibold text-gray-900">
+                    {post.fullName || "Unknown User"}
+                  </span>
+                </div>
+                <span className="text-sm text-gray-500">
+                  {post.dateCreated && !isNaN(new Date(post.dateCreated).getTime()) &&
+                    formatDistanceToNow(new Date(post.dateCreated), { addSuffix: true })}
+                </span>
+              </div>
+          
+              {/* Post title and content */}
+              <h2 className="text-xl font-bold text-gray-900 mb-3 text-left">
+                {post.title}
+              </h2>
+              <p className="text-gray-700 mb-4 text-left">
+                {post.content}
+              </p>
+          
+              {/* Event details */}
+              <div className="space-y-2 mb-4">
+                {post.eventDate && !isNaN(new Date(post.eventDate).getTime()) && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Calendar size={18} />
+                    <span>
+                      {new Date(post.eventDate).toLocaleDateString()}
                     </span>
                   </div>
-                  {post.dateCreated && !isNaN(new Date(post.dateCreated).getTime()) && (
-                    <div className="flex items-center gap-1 text-gray-800">
-                      <Clock size={16} />
-                      <span>
-                        {formatDistanceToNow(new Date(post.dateCreated), {
-                          addSuffix: true,
-                        })}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <h2 className="text-lg font-semibold mt-2 text-gray-800">
-                  {post.title}
-                </h2>
-                <p className="text-gray-800 mt-2">{post.content}</p>
-                <div className="flex items-center gap-2 mt-2 text-gray-800">
-                  {post.eventDate && !isNaN(new Date(post.eventDate).getTime()) && (
-                    <>
-                      <Calendar size={16} />
-                      <span>
-                        {new Date(post.eventDate).toLocaleDateString()}
-                      </span>
-                    </>
-                  )}
-                  <MapPin size={16} className="ml-4" />
-                  <span>{post.location}</span>
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <Button className="bg-gray-700 text-white hover:bg-gray-600 transition-colors">
-                    <MessageSquare size={16} className="mr-2" /> Comments
-                  </Button>
-                  <Button
-                    onClick={() => unpinPost(post.externalId)}
-                    className={`${
-                      pinnedPosts.has(post.externalId)
-                        ? "bg-blue-600"
-                        : "bg-gray-700"
-                    } text-white hover:bg-gray-600 transition-colors`}
-                  >
-                    <Pin size={16} className="mr-2" />
-                    {pinnedPosts.has(post.externalId) ? "Pinned" : "Pin"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                )}
+                {post.location?.trim() && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <MapPin size={18} />
+                    <span>{post.location}</span>
+                  </div>
+                )}
+              </div>
+          
+              {/* Action buttons */}
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => setSelectedPost(post)} 
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
+                >
+                  <MessageSquare size={18} className="text-gray-600" />
+                  <span className="text-gray-700">Comments</span>
+                </button>
+                <button
+                  onClick={() => unpinPost(post.externalId)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    pinnedPosts.has(post.externalId)
+                      ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                      : "bg-red-100 text-red-700 hover:bg-red-200"
+                  }`}
+                >
+                  <Pin size={18} />
+                  <span>{pinnedPosts.has(post.externalId) ? "Pinned" : "Unpin"}</span>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
           ))
         )}
       </div>
@@ -334,6 +348,16 @@ const Pinned: React.FC = () => {
         setLocation={setLocation}
         addPost={addPost}
       />
+
+      {selectedPost && (
+        <CommentModal
+          isOpen={!!selectedPost}
+          onClose={() => setSelectedPost(null)}
+          postId={selectedPost.postId}
+          postTitle={selectedPost.title}
+          postContent={selectedPost.content}
+        />
+      )}
     </MainLayout>
   );
 };

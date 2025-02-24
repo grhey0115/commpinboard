@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
   
     try {
       const response = await fetch(
-        "https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/user/authenticate",
+        "http://localhost:5062/api/user/authenticate",
         {
           method: "POST",
           headers: {
@@ -36,7 +36,7 @@ const LoginPage: React.FC = () => {
             "Accept": "application/json",
           },
           body: JSON.stringify({
-            userName: username, // FIX: Changed from "username" to "userName"
+            userName: username, 
             password: password,
           }),
         }
