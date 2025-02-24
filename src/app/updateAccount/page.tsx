@@ -161,7 +161,7 @@ const UpdateAccount: React.FC = () => {
               <h2 className="text-2xl font-bold mb-6 text-gray-900">Edit Profile</h2>
               <form onSubmit={handleUpdateAccount} className="space-y-4">
               <div className="space-y-2">
-                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="fullName" className="block text-sm text-left font-medium text-gray-700">
                     Full Name
                   </label>
                   <input
@@ -175,7 +175,7 @@ const UpdateAccount: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="username" className="block text-sm text-left font-medium text-gray-700">
                     Username
                   </label>
                   <input
@@ -190,7 +190,7 @@ const UpdateAccount: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="email" className="block text-sm text-left font-medium text-gray-700">
                     Email
                   </label>
                   <input
@@ -205,7 +205,7 @@ const UpdateAccount: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="password" className="block text-sm text-left font-medium text-gray-700">
                     Password
                   </label>
                   <input
