@@ -6,7 +6,7 @@ import { Button } from "@/Components/ui/button";
 import PostModal from "@/Components/PostModal";
 import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
-import { Clock, User, Settings, Home, CirclePlus, Pin, Search, Calendar, MapPin, MessageSquare, Heart } from "lucide-react";
+import { Clock, User, Settings, Home, CirclePlus, Pin,Trash2, Search, Calendar, MapPin, MessageSquare, Heart } from "lucide-react";
 import MainLayout from "@/Components/HomeLayout";
 import { Input } from "@/Components/ui/input";
 import Navigation from "@/Components/Navigation";
@@ -19,6 +19,7 @@ interface Post {
   externalId: string;
   fullName: string;
   postId: number;
+  userId: number;
   title: string;
   content: string;
   eventDate: string;
@@ -74,6 +75,7 @@ const Dashboard: React.FC = () => {
         const formattedPosts = postsArray.map((post) => ({
           externalId: post.externalId,
           postId: post.postId,
+          userId:post.userId,
           fullName: post.user?.fullName || "Unknown User",
           title: post.title,
           content: post.content,
@@ -100,6 +102,44 @@ const Dashboard: React.FC = () => {
   
     fetchPinnedPosts();
   }, []);
+
+
+
+  // deletePost function
+  const deletePost = async (externalId: string) => {
+    try {
+      const response = await fetch(
+        `https://commpinboarddb-hchxgbe6hsh9fddx.southeastasia-01.azurewebsites.net/api/Post?externalid=${externalId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to delete post");
+      }
+
+      alert("Post Deleted Successfully");
+
+      // Remove the deleted post from state
+      setPosts((prevPosts) => prevPosts.filter((post) => post.externalId !== externalId));
+      
+      // If the post was pinned, update pinnedPosts
+      setPinnedPosts((prev) => {
+        const newPinned = new Set(prev);
+        newPinned.delete(externalId);
+        return newPinned;
+      });
+
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post. Please try again.");
+    }
+  };
   
 
 
@@ -140,9 +180,9 @@ const Dashboard: React.FC = () => {
     return posts.filter((post) => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        post.title?.toLowerCase().includes(searchLower) ||
-        post.content?.toLowerCase().includes(searchLower) ||
-        post.fullName?.toLowerCase().includes(searchLower)
+        post.title.toLowerCase().includes(searchLower) ||
+        post.content.toLowerCase().includes(searchLower) ||
+        post.fullName.toLowerCase().includes(searchLower)
         
       );
     });
@@ -219,24 +259,6 @@ const Dashboard: React.FC = () => {
     console.log("Sending data:", JSON.stringify(postData, null, 2));
   };
   
-  
-  
-  
-
-
-
-  const toggleLike = (postId: string) => {
-    setLikedPosts(prev => {
-      const newLiked = new Set(prev);
-      if (newLiked.has(postId)) {
-        newLiked.delete(postId);
-      } else {
-        newLiked.add(postId);
-      }
-      return newLiked;
-    });
-  };
-
   const handlePinPost = async (postId: string) => {
     try {
       console.log("Starting handlePinPost for postId:", postId);
@@ -280,9 +302,9 @@ const Dashboard: React.FC = () => {
   
       // Construct the request body as expected by the API
       const requestBody = {
-        externalId: externalId, // Use the post's externalId
-        postId: numericPostId, // Use the post's postId
-        userId: userId, // Use the logged-in user's ID
+        externalId: externalId, 
+        postId: numericPostId, 
+        userId: userId,
         dateCreated: new Date().toISOString(), 
         dateUpdated: new Date().toISOString(), 
       };
@@ -370,82 +392,93 @@ const Dashboard: React.FC = () => {
 
   return (
     <MainLayout>
-       <Navigation
-      onShowModal={() => setShowModal(true)}
-      searchTerm={searchTerm}
-      onSearchChange={(value) => setSearchTerm(value)}
-    />  
+      <Navigation
+        onShowModal={() => setShowModal(true)}
+        searchTerm={searchTerm}
+        onSearchChange={(value) => setSearchTerm(value)}
+      />  
 
-      <div className="w-full max-w-3xl h-[100vh] overflow-y-auto p-0 pt-[8rem] bg-transparent z-10 scrollbar-hide">
+      <div className="w-full max-w-2xl h-[600px] overflow-y-auto p-4 bg-transparent z-10 scrollbar-hide">
         {loading ? (
           <p className="text-center text-white">Loading posts...</p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : filteredPosts.length === 0 ? (
-          <p className="text-center text-white">
-            {searchTerm ? "No posts found matching your search" : "No posts available"}
-          </p>
+          <p className="text-center text-white">No posts available</p>
         ) : (
           filteredPosts.map((post) => (
             <Card key={`${post.externalId}-${post.postId}`} className="mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              {/* Header with user info and timestamp */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortFlat&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light" alt="User" />
-                  <AvatarFallback className="text-gray-600 text-xs">U</AvatarFallback>
-                </Avatar>
-
-                  <span className="font-semibold text-gray-900">{post.fullName || "Unknown User"}</span>
-                </div>
-                <span className="text-sm text-gray-500">
-                  {post.dateCreated && !isNaN(new Date(post.dateCreated).getTime()) &&
-                    formatDistanceToNow(new Date(post.dateCreated), { addSuffix: true })}
-                </span>
-              </div>
-
-              {/* Post title and content */}
-              <h2 className="text-xl font-bold text-gray-900 mb-3 text-left">{post.title}</h2>
-              <p className="text-gray-700 mb-4 text-left">{post.content}</p>
-
-              {/* Event details */}
-              <div className="space-y-2 mb-4">
-                {post.eventDate && !isNaN(new Date(post.eventDate).getTime()) && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar size={18} />
-                    <span>{new Date(post.eventDate).toLocaleDateString()}</span>
+              <CardContent className="p-6">
+                {/* Header with user info and timestamp */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortFlat&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light" alt="User" />
+                      <AvatarFallback className="text-gray-600 text-xs">U</AvatarFallback>
+                    </Avatar>
+                    <span className="font-semibold text-gray-900">{post.fullName || "Unknown User"}</span>
                   </div>
-                )}
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin size={18} />
-                  <span>{post.location}</span>
+                  <span className="text-sm text-gray-500">
+                    {post.dateCreated && !isNaN(new Date(post.dateCreated).getTime()) &&
+                      formatDistanceToNow(new Date(post.dateCreated), { addSuffix: true })}
+                  </span>
                 </div>
-              </div>
 
-              {/* Action buttons */}
-              <div className="flex gap-3 mt-4">
-                <button
-                  onClick={() => setSelectedPost(post)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
-                >
-                  <MessageSquare size={18} className="text-gray-600" />
-                  <span className="text-gray-700">Comments</span>
-                </button>
-                <button
-                  onClick={() => handlePinPost(post.externalId)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    pinnedPosts.has(post.externalId)
-                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                      : 'bg-red-100 text-red-700 hover:bg-red-200'
-                  }`}
-                >
-                  <Pin size={18} />
-                  <span>{pinnedPosts.has(post.externalId) ? 'Pinned' : 'Pin'}</span>
-                </button>
-              </div>
-            </CardContent>
-          </Card>
+                {/* Post title and content */}
+                <h2 className="text-xl font-bold text-gray-900 mb-3 text-left">{post.title}</h2>
+                <p className="text-gray-700 mb-4 text-left">{post.content}</p>
+
+                {/* Event details */}
+                <div className="space-y-2 mb-4">
+                  {post.eventDate && !isNaN(new Date(post.eventDate).getTime()) && (
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar size={18} />
+                      <span>{new Date(post.eventDate).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <MapPin size={18} />
+                    <span>{post.location}</span>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={() => setSelectedPost(post)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
+                  >
+                    <MessageSquare size={18} className="text-gray-600" />
+                    <span className="text-gray-700">Comments</span>
+                  </button>
+                  <button
+                    onClick={() => handlePinPost(post.externalId)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                      pinnedPosts.has(post.externalId)
+                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                        : 'bg-red-100 text-red-700 hover:bg-red-200'
+                    }`}
+                  >
+                    <Pin size={18} />
+                    <span>{pinnedPosts.has(post.externalId) ? 'Pinned' : 'Pin'}</span>
+                  </button>
+                  {/* Add Delete button conditionally */}
+                  {post.userId === Number(userId) && (
+                   <button
+                   onClick={() => {
+                     if (window.confirm("Are you sure you want to delete this post?")) {
+                       deletePost(post.externalId);
+                     }
+                   }}
+                   className="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
+                 >
+                   <Trash2 size={18} />
+                   <span>Delete</span>
+                 </button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           ))
         )}
       </div>
