@@ -104,7 +104,7 @@ const UpdateAccount: React.FC = () => {
         searchTerm={searchTerm}
         onSearchChange={(value) => setSearchTerm(value)}
       />
-      <div className="w-full max-w-2xl h-[600px] overflow-y-auto p-4 bg-transparent z-10 scrollbar-hide">
+      <div className="w-full max-w-2xl h-[600px] overflow-y-auto p-4 bg-transparent z-10 scrollbar-hide mt-[8rem]">
         <Card className="mb-4 bg-white border-black-700 hover:border-gray-600 transition-colors">
           <CardContent className="p-4">
             {/* Profile Card Section */}

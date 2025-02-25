@@ -140,9 +140,9 @@ const Dashboard: React.FC = () => {
     return posts.filter((post) => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        post.title.toLowerCase().includes(searchLower) ||
-        post.content.toLowerCase().includes(searchLower) ||
-        post.fullName.toLowerCase().includes(searchLower)
+        post.title?.toLowerCase().includes(searchLower) ||
+        post.content?.toLowerCase().includes(searchLower) ||
+        post.fullName?.toLowerCase().includes(searchLower)
         
       );
     });

@@ -72,7 +72,7 @@ const SignUp: React.FC = () => {
           <h3 className="text-4xl font-extralight text-white font-sans tracking-[0.1em]">Sign Up</h3>
         </div>
 
-        <div className="w-96">
+        <div className="w-120">
           <div className="bg-white rounded-3xl p-8 w-full max-w-md mx-4">
             <div className="space-y-6">
               {/* Username and Full Name (Two Columns) */}
